@@ -1,0 +1,133 @@
+[gd_scene load_steps=2 format=3 uid="uid://b24rimxpneqna"]
+
+[ext_resource type="Script" path="res://general_tab.gd" id="1_nixvu"]
+
+[node name="ScrollContainer" type="ScrollContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_nixvu")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="header_table" type="GridContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/header_table"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+text = "Player country name:"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="player_country_name" type="Label" parent="VBoxContainer/header_table"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="VBoxContainer/header_table"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+text = "Map generation key:
+"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="map_generation_key" type="Label" parent="VBoxContainer/header_table"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label3" type="Label" parent="VBoxContainer/header_table"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+text = "Number of tiles:"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="number_of_tiles" type="Label" parent="VBoxContainer/header_table"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label4" type="Label" parent="VBoxContainer/header_table"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+text = "Number of cities:"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="number_of_cities" type="Label" parent="VBoxContainer/header_table"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "List of countries:"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="country_table" type="GridContainer" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 4
+
+[node name="Panel" type="Panel" parent="VBoxContainer/country_table"]
+custom_minimum_size = Vector2(300, 35)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/country_table/Panel"]
+custom_minimum_size = Vector2(100, 35)
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_right = 118.0
+grow_vertical = 2
+text = "Country:"
+vertical_alignment = 1
+
+[node name="Label2" type="Label" parent="VBoxContainer/country_table/Panel"]
+custom_minimum_size = Vector2(100, 35)
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -118.0
+grow_horizontal = 0
+grow_vertical = 2
+text = "Action:"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="Button" type="Button" parent="VBoxContainer/country_table"]
+custom_minimum_size = Vector2(300, 35)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+text = "Reveal map for everybody"
+
+[node name="Button2" type="Button" parent="VBoxContainer/country_table"]
+custom_minimum_size = Vector2(300, 35)
+layout_mode = 2
+text = "Hide map for everybody"
+
+[node name="Button3" type="Button" parent="VBoxContainer/country_table"]
+custom_minimum_size = Vector2(300, 35)
+layout_mode = 2
+text = "Reveal  resources for everybody"
