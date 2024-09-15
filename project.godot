@@ -17,7 +17,9 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-Constants="*res://constants.gd"
+SavegameFormat="*res://savegame_format.gd"
+Ui="*res://ui.gd"
+SavegameData="*res://savegame_data.gd"
 
 [debug]
 
@@ -27,8 +29,3 @@ gdscript/warnings/untyped_declaration=2
 
 window/size/viewport_width=1024
 window/size/viewport_height=768
-
-[editor]
-
-version_control/plugin_name="GitPlugin"
-version_control/autoload_on_startup=true

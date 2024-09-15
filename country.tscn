@@ -1,0 +1,46 @@
+[gd_scene load_steps=3 format=3 uid="uid://cvwu5q48d48uw"]
+
+[ext_resource type="Script" path="res://country.gd" id="1_5ypl7"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_57k1o"]
+
+[node name="Control" type="Panel"]
+custom_minimum_size = Vector2(300, 35)
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_57k1o")
+script = ExtResource("1_5ypl7")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+custom_minimum_size = Vector2(35, 35)
+layout_mode = 1
+offset_right = 35.0
+offset_bottom = 35.0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="Label" type="Label" parent="ColorRect"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -0.5
+offset_top = -11.5
+offset_right = 0.5
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+justification_flags = 0
+
+[node name="Label" type="Label" parent="."]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 1
+offset_left = 45.0
+offset_right = 46.0
+offset_bottom = 35.0
+size_flags_horizontal = 4
+vertical_alignment = 1

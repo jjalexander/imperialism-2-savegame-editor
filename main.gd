@@ -19,23 +19,6 @@ var file_dialog: FileDialog
 
 var general_scene := preload("res://general_tab.tscn")
 
-var raw_header: PackedByteArray
-var raw_irrelevant1: PackedByteArray
-var raw_savegame_name: PackedByteArray
-var raw_irrelevant2: PackedByteArray
-var raw_player_country_number: PackedByteArray
-var raw_player_country_name: PackedByteArray
-var raw_irrelevant3: PackedByteArray
-var raw_country_name_lengths: Array[PackedByteArray]
-var raw_country_names: Array[PackedByteArray]
-var raw_map_key_length: PackedByteArray
-var raw_map_key: PackedByteArray
-var raw_irrelevant4: PackedByteArray
-var raw_tile_data: Array[PackedByteArray]
-var raw_irrelevant5: PackedByteArray
-var raw_cities_data: Array[PackedByteArray]
-var raw_irrelevant6: PackedByteArray
-
 func _ready() -> void:
 	get_window().set_min_size(get_window().get_contents_minimum_size())
 
@@ -48,66 +31,61 @@ func _on_open_savegame_pressed() -> void:
 func _on_savegame_selected(path: String) -> void:
 	file_dialog.queue_free()
 	
+	clear_ui()
+	
 	var input: PackedByteArray = FileAccess.get_file_as_bytes(path)
 	
-	clear_data()
+	SavegameData.clear_data()
 
-	raw_header = get_pba_between(input, Constants.HEADER_START, Constants.HEADER_START + Constants.HEADER_LENGTH)
-	if raw_header.get_string_from_ascii() != Constants.HEADER:
+	SavegameData.raw_header = get_pba_between(input, SavegameFormat.HEADER_START, SavegameFormat.HEADER_START + SavegameFormat.HEADER_LENGTH)
+	if SavegameData.raw_header.get_string_from_ascii() != SavegameFormat.HEADER:
 		%savegame_location.text = "Invalid file: %s" % [path]
-		clear_data()
+		SavegameData.clear_data()
 		return
 
-	raw_irrelevant1 = get_pba_between(input, Constants.HEADER_START + Constants.HEADER_LENGTH, Constants.SAVENAME_START)
-	raw_savegame_name = get_pba_between(input, Constants.SAVENAME_START, Constants.SAVENAME_START + Constants.SAVENAME_MAX_LENGTH)
-	raw_irrelevant2 = get_pba_between(input, Constants.SAVENAME_START + Constants.SAVENAME_MAX_LENGTH, Constants.PLAYER_COUNTRY_NUMBER)
-	raw_player_country_number = get_pba_between(input, Constants.PLAYER_COUNTRY_NUMBER, Constants.PLAYER_COUNTRY_NUMBER + 1)
-	raw_player_country_name = get_pba_between(input, Constants.PLAYER_COUNTRY_NAME_START, Constants.PLAYER_COUNTRY_NAME_START + Constants.PLAYER_COUNTRY_NAME_LENGTH)
-	raw_irrelevant3 = get_pba_between(input, Constants.PLAYER_COUNTRY_NAME_START + Constants.PLAYER_COUNTRY_NAME_LENGTH, Constants.COUNTRY_NAMES_START)
+	SavegameData.raw_irrelevant1 = get_pba_between(input, SavegameFormat.HEADER_START + SavegameFormat.HEADER_LENGTH, SavegameFormat.SAVENAME_START)
+	SavegameData.raw_savegame_name = get_pba_between(input, SavegameFormat.SAVENAME_START, SavegameFormat.SAVENAME_START + SavegameFormat.SAVENAME_MAX_LENGTH)
+	SavegameData.raw_irrelevant2 = get_pba_between(input, SavegameFormat.SAVENAME_START + SavegameFormat.SAVENAME_MAX_LENGTH, SavegameFormat.PLAYER_COUNTRY_NUMBER)
+	SavegameData.raw_player_country_number = get_pba_between(input, SavegameFormat.PLAYER_COUNTRY_NUMBER, SavegameFormat.PLAYER_COUNTRY_NUMBER + 1)
+	SavegameData.raw_player_country_name = get_pba_between(input, SavegameFormat.PLAYER_COUNTRY_NAME_START, SavegameFormat.PLAYER_COUNTRY_NAME_START + SavegameFormat.PLAYER_COUNTRY_NAME_LENGTH)
+	SavegameData.raw_irrelevant3 = get_pba_between(input, SavegameFormat.PLAYER_COUNTRY_NAME_START + SavegameFormat.PLAYER_COUNTRY_NAME_LENGTH, SavegameFormat.COUNTRY_NAMES_START)
 	
-	var index := Constants.COUNTRY_NAMES_START
-	for i in range(Constants.COUNTRIES_COUNT):
+	var index := SavegameFormat.COUNTRY_NAMES_START
+	for i in range(SavegameFormat.COUNTRIES_COUNT):
 		var raw_name_length := get_pba_between(input, index, index + 1)
-		raw_country_name_lengths.push_back(raw_name_length)
 		var name_length := raw_name_length[0]
-		var raw_country_name := get_pba_between(input, index + 1, index + 1 + name_length)
-		raw_country_names.push_back(raw_country_name)
 		index += 1 + name_length
+	SavegameData.raw_country_names = get_pba_between(input, SavegameFormat.COUNTRY_NAMES_START, index)
 	
 	var world_data_start := get_world_data_start(input)
 	if world_data_start == -1:
 		%savegame_location.text = "Invalid file: %s" % [path]
-		clear_data()
+		SavegameData.clear_data()
 		return
-	raw_irrelevant4 = get_pba_between(input, index, world_data_start)
-	raw_map_key_length = get_pba_between(input, world_data_start, world_data_start + 1)
-	var map_key_length := raw_map_key_length[0]
-	raw_map_key = get_pba_between(input, world_data_start + 1, world_data_start + 1 + map_key_length)
+	SavegameData.raw_irrelevant4 = get_pba_between(input, index, world_data_start)
+	SavegameData.raw_map_key_length = get_pba_between(input, world_data_start, world_data_start + 1)
+	var map_key_length := SavegameData.raw_map_key_length[0]
+	SavegameData.raw_map_key = get_pba_between(input, world_data_start + 1, world_data_start + 1 + map_key_length)
 	var tile_data_start := world_data_start + 1 + map_key_length
-	for i in range(Constants.WORLD_SIZE):
-		raw_tile_data.push_back(get_pba_between(input, tile_data_start + i * Constants.TILE_DATA_LENGTH, tile_data_start + (i + 1) * Constants.TILE_DATA_LENGTH))
-	var tile_data_end := tile_data_start + Constants.WORLD_SIZE * Constants.TILE_DATA_LENGTH
-	raw_irrelevant5 = get_pba_between(input, tile_data_end, tile_data_end + 1)
+	for i in range(SavegameFormat.WORLD_SIZE):
+		SavegameData.raw_tile_data.push_back(get_pba_between(input, tile_data_start + i * SavegameFormat.TILE_DATA_LENGTH, tile_data_start + (i + 1) * SavegameFormat.TILE_DATA_LENGTH))
+	var tile_data_end := tile_data_start + SavegameFormat.WORLD_SIZE * SavegameFormat.TILE_DATA_LENGTH
+	SavegameData.raw_irrelevant5 = get_pba_between(input, tile_data_end, tile_data_end + 1)
 
 	index = tile_data_end + 1
 	while input[index] != 255 and input[index + 1] != 255:
-		var city_name_length := input[index + Constants.CITY_DATA_LENGTH - 1]
-		raw_cities_data.push_back(get_pba_between(input, index, index + Constants.CITY_DATA_LENGTH + city_name_length))
-		index += Constants.CITY_DATA_LENGTH + city_name_length
-	raw_irrelevant6 = get_pba_between(input, index, index + 2)
+		var city_name_length := input[index + SavegameFormat.CITY_DATA_LENGTH - 1]
+		SavegameData.raw_cities_data.push_back(get_pba_between(input, index, index + SavegameFormat.CITY_DATA_LENGTH + city_name_length))
+		index += SavegameFormat.CITY_DATA_LENGTH + city_name_length
+	SavegameData.raw_irrelevant6 = get_pba_between(input, index, index + 2)
 
-	%savegame_location.text = "{path} ({name})".format({"path": path, "name": raw_savegame_name.get_string_from_ascii()})
-		
-	for i in %General.get_children():
-		i.queue_free()
-	
-	var general_table := general_scene.instantiate(PackedScene.GEN_EDIT_STATE_DISABLED)
-	general_table.set_header_info(raw_player_country_name,raw_map_key,raw_tile_data.size(),raw_cities_data.size())
-	general_table.set_countries_info(raw_country_names)
-	%General.add_child(general_table)
+	SavegameData.format_data()
+
+	%savegame_location.text = "{path} ({name})".format({"path": path, "name": SavegameData.raw_savegame_name.get_string_from_ascii()})	
+	%General.add_child(general_scene.instantiate(PackedScene.GEN_EDIT_STATE_DISABLED))
 	
 func get_world_data_start(input: PackedByteArray) -> int:
-	var start_marker := Constants.WORLD_DATA_START_MARKER
+	var start_marker := SavegameFormat.WORLD_DATA_START_MARKER
 	var start_index := -1
 	for i in range(input.size() - 4):
 		var slice := input.slice(i, i + 5)
@@ -119,20 +97,7 @@ func get_world_data_start(input: PackedByteArray) -> int:
 func get_pba_between(input: PackedByteArray, start: int, end: int) -> PackedByteArray:
 	return input.slice(start, end)
 
-func clear_data() -> void:
-	raw_header = PackedByteArray()
-	raw_irrelevant1 = PackedByteArray()
-	raw_savegame_name = PackedByteArray()
-	raw_irrelevant2 = PackedByteArray()
-	raw_player_country_number = PackedByteArray()
-	raw_player_country_name = PackedByteArray()
-	raw_irrelevant3 = PackedByteArray()
-	raw_country_name_lengths = []
-	raw_country_names = []
-	raw_map_key_length = PackedByteArray()
-	raw_map_key = PackedByteArray()
-	raw_irrelevant4 = PackedByteArray()
-	raw_tile_data = []
-	raw_irrelevant5 = PackedByteArray()
-	raw_cities_data = []
-	raw_irrelevant6 = PackedByteArray()
+func clear_ui() -> void:
+	%savegame_location.text = ""
+	for child in %General.get_children():
+		child.queue_free()
