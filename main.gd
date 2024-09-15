@@ -22,6 +22,27 @@ var general_scene := preload("res://general_tab.tscn")
 func _ready() -> void:
 	get_window().set_min_size(get_window().get_contents_minimum_size())
 
+func _on_save_changes_pressed() -> void:
+	var file := FileAccess.open("C:/Program Files (x86)/GOG Galaxy/Games/Imperialism II/Save/slotA.imp", FileAccess.WRITE)
+	file.store_buffer(SavegameData.raw_header)
+	file.store_buffer(SavegameData.raw_irrelevant1)
+	file.store_buffer(SavegameData.raw_savegame_name)
+	file.store_buffer(SavegameData.raw_irrelevant2)
+	file.store_buffer(SavegameData.raw_player_country_number)
+	file.store_buffer(SavegameData.raw_player_country_name)
+	file.store_buffer(SavegameData.raw_irrelevant3)
+	file.store_buffer(SavegameData.raw_country_names)
+	file.store_buffer(SavegameData.raw_irrelevant4)
+	file.store_buffer(SavegameData.raw_map_key_length)
+	file.store_buffer(SavegameData.raw_map_key)
+	for tile_data in SavegameData.raw_tile_data:
+		file.store_buffer(tile_data)
+	file.store_buffer(SavegameData.raw_irrelevant5)
+	for city_data in SavegameData.raw_cities_data:
+		file.store_buffer(city_data)
+	file.store_buffer(SavegameData.raw_irrelevant6)
+	file.close()
+
 func _on_open_savegame_pressed() -> void:
 	file_dialog = file_dialog_scene.instantiate(PackedScene.GEN_EDIT_STATE_DISABLED)
 	file_dialog.set_current_dir("C:/Program Files (x86)/GOG Galaxy/Games/Imperialism II/Save")
@@ -77,11 +98,11 @@ func _on_savegame_selected(path: String) -> void:
 		var city_name_length := input[index + SavegameFormat.CITY_DATA_LENGTH - 1]
 		SavegameData.raw_cities_data.push_back(get_pba_between(input, index, index + SavegameFormat.CITY_DATA_LENGTH + city_name_length))
 		index += SavegameFormat.CITY_DATA_LENGTH + city_name_length
-	SavegameData.raw_irrelevant6 = get_pba_between(input, index, index + 2)
+	SavegameData.raw_irrelevant6 = get_pba_between(input, index, input.size())
 
 	SavegameData.format_data()
 
-	%savegame_location.text = "{path} ({name})".format({"path": path, "name": SavegameData.raw_savegame_name.get_string_from_ascii()})	
+	%savegame_location.text = "{path} ({name})".format({"path": path, "name": SavegameData.raw_savegame_name.get_string_from_ascii()})
 	%General.add_child(general_scene.instantiate(PackedScene.GEN_EDIT_STATE_DISABLED))
 	
 func get_world_data_start(input: PackedByteArray) -> int:

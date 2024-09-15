@@ -67,4 +67,4 @@ layout_mode = 2
 metadata/_tab_index = 0
 
 [connection signal="pressed" from="Button" to="." method="_on_open_savegame_pressed"]
-[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
+[connection signal="pressed" from="Button2" to="." method="_on_save_changes_pressed"]

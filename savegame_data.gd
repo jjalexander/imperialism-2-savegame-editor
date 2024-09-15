@@ -12,10 +12,10 @@ var player_country_name: String
 var raw_irrelevant3: PackedByteArray
 var raw_country_names: PackedByteArray
 var country_names: Array[String]
+var raw_irrelevant4: PackedByteArray
 var raw_map_key_length: PackedByteArray
 var raw_map_key: PackedByteArray
 var map_key: String
-var raw_irrelevant4: PackedByteArray
 var raw_tile_data: Array[PackedByteArray]
 var raw_irrelevant5: PackedByteArray
 var raw_cities_data: Array[PackedByteArray]
