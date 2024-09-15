@@ -54,7 +54,7 @@ jobs:
      ./godot --headless --path ./ --export-release "Web" ./
     
 
-  - uses: actions/upload-artifact@v2
+  - uses: actions/upload-artifact@v4
     with:
      name: exports
      path: exports
@@ -111,7 +111,7 @@ jobs:
        content: ${{ steps.tag_version.outputs.new_version }}
        mode: 0655
     
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
        name: VERSION
        path: ./VERSION.txt
