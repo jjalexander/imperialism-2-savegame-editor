@@ -3,15 +3,15 @@ name: Publish {PROJECT_NAME} to Itch.io
 on:
  push:
   branches:
-  - main
+  - master
  pull_request:
   branches:
-  - main
+  - master
 env:
  BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }} # Needs to be added through github
  DISCORD_WEBHOOK: ${{secrets.DISCORD_WEBHOOK}} # Needs to be added through github
  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
- IS_MAIN: ${{ contains(github.ref, 'main') }}
+ IS_MAIN: ${{ contains(github.ref, 'master') }}
  PROJECT_NAME: "{PROJECT_NAME}"
 
 jobs:

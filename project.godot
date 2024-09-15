@@ -29,3 +29,12 @@ gdscript/warnings/untyped_declaration=2
 
 window/size/viewport_width=1024
 window/size/viewport_height=768
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/github_to_itch/plugin.cfg")
+
+[github_to_itch]
+
+config/itch_username="JJGamesStudio"
+config/itch_project_name="https://jjgamesstudio.itch.io/imperialism-2-savegame-editor"
