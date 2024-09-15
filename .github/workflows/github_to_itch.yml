@@ -61,7 +61,7 @@ jobs:
   
  Release:
   needs: Export
-  if: ${{ contains(github.ref, 'main') }}
+  if: ${{ contains(github.ref, 'master') }}
   runs-on: ubuntu-latest
   steps:
     - uses: actions/checkout@v2
@@ -118,7 +118,7 @@ jobs:
  
  Publish:
   needs: Release
-  if: ${{ contains(github.ref, 'main') }}
+  if: ${{ contains(github.ref, 'master') }}
   runs-on: ubuntu-latest
   steps:
     - uses: actions/download-artifact@v2
