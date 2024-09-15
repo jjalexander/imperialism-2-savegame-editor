@@ -3,15 +3,15 @@ name: Publish Imperialism 2 Savegame Editor to Itch.io
 on:
  push:
   branches:
-  - master
+  - main
  pull_request:
   branches:
-  - master
+  - main
 env:
  BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }} # Needs to be added through github
  DISCORD_WEBHOOK: ${{secrets.DISCORD_WEBHOOK}} # Needs to be added through github
  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
- IS_MAIN: ${{ contains(github.ref, 'master') }}
+ IS_MAIN: ${{ contains(github.ref, 'main') }}
  PROJECT_NAME: "Imperialism 2 Savegame Editor"
 
 jobs:
@@ -54,14 +54,14 @@ jobs:
      ./godot --headless --path ./ --export-release "Web" ./
     
 
-  - uses: actions/upload-artifact@v4
+  - uses: actions/upload-artifact@v2
     with:
      name: exports
      path: exports
   
  Release:
   needs: Export
-  if: ${{ contains(github.ref, 'master') }}
+  if: ${{ contains(github.ref, 'main') }}
   runs-on: ubuntu-latest
   steps:
     - uses: actions/checkout@v2
@@ -111,14 +111,14 @@ jobs:
        content: ${{ steps.tag_version.outputs.new_version }}
        mode: 0655
     
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v2
       with:
        name: VERSION
        path: ./VERSION.txt
  
  Publish:
   needs: Release
-  if: ${{ contains(github.ref, 'master') }}
+  if: ${{ contains(github.ref, 'main') }}
   runs-on: ubuntu-latest
   steps:
     - uses: actions/download-artifact@v2
@@ -132,6 +132,9 @@ jobs:
     
     - name: Login To Butler
       run: ./butler login
+    
+    - name: Push Web to Itch
+      run: ./butler push ./ jjgamesstudio/https://jjgamesstudio.itch.io/imperialism-2-savegame-editor:web --userversion-file ./VERSION/VERSION.txt
     
 
  Cleanup:
