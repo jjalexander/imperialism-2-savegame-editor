@@ -47,8 +47,8 @@ func _on_save_changes_pressed() -> void:
 	buffer.append_array(SavegameData.raw_irrelevant6)
 
 	if OS.get_name() != "Web":
-		if SavegameData.file_path == "":
-			pass
+		if SavegameData.file_path.is_empty():
+			return
 		
 		var backup_path := SavegameData.file_path + ".bak"
 		var backup_file := FileAccess.open(backup_path, FileAccess.WRITE)
@@ -59,8 +59,11 @@ func _on_save_changes_pressed() -> void:
 		var file := FileAccess.open(SavegameData.file_path, FileAccess.WRITE)
 		file.store_buffer(buffer)
 		file.close()
+
+		%status.set_good_status("Changes saved to %s" % SavegameData.file_path)
 	else:
 		JavaScriptBridge.download_buffer(buffer, SavegameData.file_name, "application/octet-stream")
+		%status.set_good_status("Changes saved on your device")
 
 
 func _on_open_savegame_pressed() -> void:
@@ -77,24 +80,42 @@ func _on_open_savegame_pressed() -> void:
 func _on_remote_savegame_selected(file_name: String, _type: String, base64_data: String) -> void:
 	var input := Marshalls.base64_to_raw(base64_data)
 	go_through_savegame(file_name, input)
+	if go_through_savegame(file_name, input):
+		%savegame.text = "{file_name} ({name})".format({"file_name": file_name, "name": SavegameData.raw_savegame_name.get_string_from_ascii()})
+		%status.set_good_status("Savegame %s opened" % file_name)
+	else:
+		%status.set_bad_status("Invalid savegame %s" % file_name)
 	
 
 func _on_local_savegame_selected(path: String) -> void:
 	file_dialog.queue_free()
 	var input: PackedByteArray = FileAccess.get_file_as_bytes(path)
 	SavegameData.file_path = path
-	go_through_savegame(path.get_file(), input)
+	if go_through_savegame(path.get_file(), input):
+		SavegameData.file_path = path
+		%savegame.text = "{file_name} ({name})".format({"file_name": path, "name": SavegameData.raw_savegame_name.get_string_from_ascii()})
+		%status.set_good_status("Savegame %s opened" % path)
+	else:
+		%status.set_bad_status("Invalid savegame %s" % path)
+	
 
-
-func go_through_savegame(file_name: String, input: PackedByteArray) -> void:
-	clear_ui()
+func go_through_savegame(file_name: String, input: PackedByteArray) -> bool:
+	reset_ui()
 	SavegameData.clear_data()
 
+	if _go_through_savegame(file_name, input):
+		%General.add_child(general_scene.instantiate(PackedScene.GEN_EDIT_STATE_DISABLED))
+		return true
+	else:
+		reset_ui()
+		SavegameData.clear_data()
+		return false
+
+
+func _go_through_savegame(file_name: String, input: PackedByteArray) -> bool:
 	SavegameData.raw_header = get_pba_between(input, SavegameFormat.HEADER_START, SavegameFormat.HEADER_START + SavegameFormat.HEADER_LENGTH)
 	if SavegameData.raw_header.get_string_from_ascii() != SavegameFormat.HEADER:
-		%savegame_location.text = "Invalid file: %s" % [file_name]
-		SavegameData.clear_data()
-		return
+		return false
 
 	SavegameData.raw_irrelevant1 = get_pba_between(input, SavegameFormat.HEADER_START + SavegameFormat.HEADER_LENGTH, SavegameFormat.SAVENAME_START)
 	SavegameData.raw_savegame_name = get_pba_between(input, SavegameFormat.SAVENAME_START, SavegameFormat.SAVENAME_START + SavegameFormat.SAVENAME_MAX_LENGTH)
@@ -112,9 +133,7 @@ func go_through_savegame(file_name: String, input: PackedByteArray) -> void:
 	
 	var world_data_start := get_world_data_start(input)
 	if world_data_start == -1:
-		%savegame_location.text = "Invalid file: %s" % [file_name]
-		SavegameData.clear_data()
-		return
+		return false
 	SavegameData.raw_irrelevant4 = get_pba_between(input, index, world_data_start)
 	SavegameData.raw_map_key_length = get_pba_between(input, world_data_start, world_data_start + 1)
 	var map_key_length := SavegameData.raw_map_key_length[0]
@@ -135,14 +154,11 @@ func go_through_savegame(file_name: String, input: PackedByteArray) -> void:
 	var result := SavegameData.format_data()
 
 	if not result:
-		%savegame_location.text = "Invalid file: %s" % [file_name]
-		SavegameData.clear_data()
-		return
+		return false
 
 	SavegameData.file_name = file_name
 
-	%savegame_location.text = "Succesfully loaded: {file_name} ({name})".format({"file_name": file_name, "name": SavegameData.raw_savegame_name.get_string_from_ascii()})
-	%General.add_child(general_scene.instantiate(PackedScene.GEN_EDIT_STATE_DISABLED))
+	return true
 
 	
 func get_world_data_start(input: PackedByteArray) -> int:
@@ -160,7 +176,7 @@ func get_pba_between(input: PackedByteArray, start: int, end: int) -> PackedByte
 	return input.slice(start, end)
 
 
-func clear_ui() -> void:
-	%savegame_location.text = ""
+func reset_ui() -> void:
+	%savegame.text = "No savegame opened"
 	for child in %General.get_children():
 		child.queue_free()

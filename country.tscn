@@ -1,25 +1,32 @@
-[gd_scene load_steps=3 format=3 uid="uid://cvwu5q48d48uw"]
+[gd_scene load_steps=4 format=3 uid="uid://cvwu5q48d48uw"]
 
 [ext_resource type="Script" path="res://country.gd" id="1_5ypl7"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_57k1o"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1u12b"]
 
-[node name="Control" type="Panel"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_n6sbd"]
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="country" type="Panel"]
 custom_minimum_size = Vector2(300, 35)
 size_flags_horizontal = 0
 size_flags_vertical = 0
-theme_override_styles/panel = SubResource("StyleBoxEmpty_57k1o")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_1u12b")
 script = ExtResource("1_5ypl7")
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="index" type="Panel" parent="."]
 custom_minimum_size = Vector2(35, 35)
 layout_mode = 1
 offset_right = 35.0
 offset_bottom = 35.0
 size_flags_horizontal = 4
 size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_n6sbd")
 
-[node name="Label" type="Label" parent="ColorRect"]
+[node name="index_number" type="Label" parent="index"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -36,7 +43,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 justification_flags = 0
 
-[node name="Label" type="Label" parent="."]
+[node name="name" type="Label" parent="."]
 custom_minimum_size = Vector2(0, 35)
 layout_mode = 1
 offset_left = 45.0

@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://doee6d8gafr0j"]
+[gd_scene load_steps=3 format=3 uid="uid://doee6d8gafr0j"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_uqgat"]
+[ext_resource type="Script" path="res://status.gd" id="2_uj4k8"]
 
 [node name="Panel" type="Panel"]
 custom_minimum_size = Vector2(460, 460)
@@ -31,7 +32,7 @@ offset_right = 300.0
 offset_bottom = 45.0
 text = "Save changes"
 
-[node name="savegame_location" type="Label" parent="."]
+[node name="savegame" type="Label" parent="."]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 35)
 layout_mode = 1
@@ -56,7 +57,7 @@ anchor_bottom = 1.0
 offset_left = 10.0
 offset_top = 55.0
 offset_right = -10.0
-offset_bottom = -10.0
+offset_bottom = -56.0
 grow_horizontal = 2
 grow_vertical = 2
 current_tab = 0
@@ -65,6 +66,24 @@ current_tab = 0
 unique_name_in_owner = true
 layout_mode = 2
 metadata/_tab_index = 0
+
+[node name="status" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = -45.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("2_uj4k8")
 
 [connection signal="pressed" from="Button" to="." method="_on_open_savegame_pressed"]
 [connection signal="pressed" from="Button2" to="." method="_on_save_changes_pressed"]
