@@ -32,9 +32,14 @@ window/size/viewport_height=768
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/github_to_itch/plugin.cfg")
+enabled=PackedStringArray("res://addons/FileAccessWeb/plugin.cfg")
 
 [github_to_itch]
 
 config/itch_username="JJGamesStudio"
 config/itch_project_name="https://jjgamesstudio.itch.io/imperialism-2-savegame-editor"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

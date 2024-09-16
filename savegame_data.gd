@@ -21,7 +21,11 @@ var raw_irrelevant5: PackedByteArray
 var raw_cities_data: Array[PackedByteArray]
 var raw_irrelevant6: PackedByteArray
 
-func format_data() -> void:
+var file_name := String()
+var file_path := String()
+
+func format_data() -> bool:
+	var result := true
 	savegame_name = raw_savegame_name.get_string_from_ascii()
 	player_country_number = raw_player_country_number[0]
 	player_country_name = raw_player_country_name.get_string_from_ascii()
@@ -32,6 +36,8 @@ func format_data() -> void:
 		country_names.append(raw_country_name.get_string_from_ascii().trim_prefix(" "))
 		index += 1 + name_length
 	map_key = raw_map_key.get_string_from_ascii()
+	return result
+
 
 func clear_data() -> void:
 	raw_header = PackedByteArray()
@@ -54,3 +60,6 @@ func clear_data() -> void:
 	raw_irrelevant5 = PackedByteArray()
 	raw_cities_data = []
 	raw_irrelevant6 = PackedByteArray()
+
+	file_name = ""
+	file_path = ""

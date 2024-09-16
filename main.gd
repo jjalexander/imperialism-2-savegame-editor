@@ -16,6 +16,7 @@ class Field:
  
 var file_dialog_scene := preload("res://file_dialog.tscn")
 var file_dialog: FileDialog
+var file_access_web: FileAccessWeb
 
 var general_scene := preload("res://general_tab.tscn")
 
@@ -23,44 +24,75 @@ func _ready() -> void:
 	get_window().set_min_size(get_window().get_contents_minimum_size())
 
 func _on_save_changes_pressed() -> void:
-	var file := FileAccess.open("C:/Program Files (x86)/GOG Galaxy/Games/Imperialism II/Save/slotA.imp", FileAccess.WRITE)
-	file.store_buffer(SavegameData.raw_header)
-	file.store_buffer(SavegameData.raw_irrelevant1)
-	file.store_buffer(SavegameData.raw_savegame_name)
-	file.store_buffer(SavegameData.raw_irrelevant2)
-	file.store_buffer(SavegameData.raw_player_country_number)
-	file.store_buffer(SavegameData.raw_player_country_name)
-	file.store_buffer(SavegameData.raw_irrelevant3)
-	file.store_buffer(SavegameData.raw_country_names)
-	file.store_buffer(SavegameData.raw_irrelevant4)
-	file.store_buffer(SavegameData.raw_map_key_length)
-	file.store_buffer(SavegameData.raw_map_key)
+	if SavegameData.file_name == "":
+		return
+	
+	var buffer := PackedByteArray()
+	buffer.append_array(SavegameData.raw_header)
+	buffer.append_array(SavegameData.raw_irrelevant1)
+	buffer.append_array(SavegameData.raw_savegame_name)
+	buffer.append_array(SavegameData.raw_irrelevant2)
+	buffer.append_array(SavegameData.raw_player_country_number)
+	buffer.append_array(SavegameData.raw_player_country_name)
+	buffer.append_array(SavegameData.raw_irrelevant3)
+	buffer.append_array(SavegameData.raw_country_names)
+	buffer.append_array(SavegameData.raw_irrelevant4)
+	buffer.append_array(SavegameData.raw_map_key_length)
+	buffer.append_array(SavegameData.raw_map_key)
 	for tile_data in SavegameData.raw_tile_data:
-		file.store_buffer(tile_data)
-	file.store_buffer(SavegameData.raw_irrelevant5)
+		buffer.append_array(tile_data)
+	buffer.append_array(SavegameData.raw_irrelevant5)
 	for city_data in SavegameData.raw_cities_data:
-		file.store_buffer(city_data)
-	file.store_buffer(SavegameData.raw_irrelevant6)
-	file.close()
+		buffer.append_array(city_data)
+	buffer.append_array(SavegameData.raw_irrelevant6)
+
+	if OS.get_name() != "Web":
+		if SavegameData.file_path == "":
+			pass
+		
+		var backup_path := SavegameData.file_path + ".bak"
+		var backup_file := FileAccess.open(backup_path, FileAccess.WRITE)
+		var backup_buffer := FileAccess.get_file_as_bytes(SavegameData.file_path)
+		backup_file.store_buffer(backup_buffer)
+		backup_file.close()
+
+		var file := FileAccess.open(SavegameData.file_path, FileAccess.WRITE)
+		file.store_buffer(buffer)
+		file.close()
+	else:
+		JavaScriptBridge.download_buffer(buffer, SavegameData.file_name, "application/octet-stream")
+
 
 func _on_open_savegame_pressed() -> void:
-	file_dialog = file_dialog_scene.instantiate(PackedScene.GEN_EDIT_STATE_DISABLED)
-	file_dialog.set_current_dir("C:/Program Files (x86)/GOG Galaxy/Games/Imperialism II/Save")
-	file_dialog.connect("file_selected", _on_savegame_selected)
-	add_child(file_dialog)
+	if OS.get_name() != "Web":
+		file_dialog = file_dialog_scene.instantiate(PackedScene.GEN_EDIT_STATE_DISABLED)
+		file_dialog.connect("file_selected", _on_local_savegame_selected)
+		add_child(file_dialog)
+	else:
+		file_access_web = FileAccessWeb.new()
+		file_access_web.loaded.connect(_on_remote_savegame_selected)
+		file_access_web.open()
 
-func _on_savegame_selected(path: String) -> void:
+
+func _on_remote_savegame_selected(file_name: String, _type: String, base64_data: String) -> void:
+	var input := Marshalls.base64_to_raw(base64_data)
+	go_through_savegame(file_name, input)
+	
+
+func _on_local_savegame_selected(path: String) -> void:
 	file_dialog.queue_free()
-	
-	clear_ui()
-	
 	var input: PackedByteArray = FileAccess.get_file_as_bytes(path)
-	
+	SavegameData.file_path = path
+	go_through_savegame(path.get_file(), input)
+
+
+func go_through_savegame(file_name: String, input: PackedByteArray) -> void:
+	clear_ui()
 	SavegameData.clear_data()
 
 	SavegameData.raw_header = get_pba_between(input, SavegameFormat.HEADER_START, SavegameFormat.HEADER_START + SavegameFormat.HEADER_LENGTH)
 	if SavegameData.raw_header.get_string_from_ascii() != SavegameFormat.HEADER:
-		%savegame_location.text = "Invalid file: %s" % [path]
+		%savegame_location.text = "Invalid file: %s" % [file_name]
 		SavegameData.clear_data()
 		return
 
@@ -80,7 +112,7 @@ func _on_savegame_selected(path: String) -> void:
 	
 	var world_data_start := get_world_data_start(input)
 	if world_data_start == -1:
-		%savegame_location.text = "Invalid file: %s" % [path]
+		%savegame_location.text = "Invalid file: %s" % [file_name]
 		SavegameData.clear_data()
 		return
 	SavegameData.raw_irrelevant4 = get_pba_between(input, index, world_data_start)
@@ -100,10 +132,18 @@ func _on_savegame_selected(path: String) -> void:
 		index += SavegameFormat.CITY_DATA_LENGTH + city_name_length
 	SavegameData.raw_irrelevant6 = get_pba_between(input, index, input.size())
 
-	SavegameData.format_data()
+	var result := SavegameData.format_data()
 
-	%savegame_location.text = "{path} ({name})".format({"path": path, "name": SavegameData.raw_savegame_name.get_string_from_ascii()})
+	if not result:
+		%savegame_location.text = "Invalid file: %s" % [file_name]
+		SavegameData.clear_data()
+		return
+
+	SavegameData.file_name = file_name
+
+	%savegame_location.text = "Succesfully loaded: {file_name} ({name})".format({"file_name": file_name, "name": SavegameData.raw_savegame_name.get_string_from_ascii()})
 	%General.add_child(general_scene.instantiate(PackedScene.GEN_EDIT_STATE_DISABLED))
+
 	
 func get_world_data_start(input: PackedByteArray) -> int:
 	var start_marker := SavegameFormat.WORLD_DATA_START_MARKER
@@ -115,8 +155,10 @@ func get_world_data_start(input: PackedByteArray) -> int:
 			break
 	return start_index + 19
 
+
 func get_pba_between(input: PackedByteArray, start: int, end: int) -> PackedByteArray:
 	return input.slice(start, end)
+
 
 func clear_ui() -> void:
 	%savegame_location.text = ""
